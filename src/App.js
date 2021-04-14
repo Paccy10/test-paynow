@@ -32,12 +32,12 @@ class App extends Component {
       };
     }
     const res = await axios.patch(
-      'http://localhost:5000/api/land-transfers/7/pay',
+      'http://localhost:5000/api/land-transfers/9/pay',
       data,
       {
         headers: {
           Authorization:
-            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJmYWJyaWNlLm1hbnppQGdtYWlsLmNvbSIsImlhdCI6MTYxODMwMjgwMywiZXhwIjoxNjE4Mzg5MjAzfQ.8wMp-v1uU9mZ8VATdU_9Q7WTem7NEgs1lGdc2iQwo6M'
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJmYWJyaWNlLm1hbnppQGdtYWlsLmNvbSIsImlhdCI6MTYxODM4OTM0NywiZXhwIjoxNjE4NDc1NzQ3fQ.wAV38NEqq2cpI5HQKchh1YVsr9dW4N0EPuUt7vwCZE8'
         }
       }
     );
@@ -50,20 +50,16 @@ class App extends Component {
       const callinterval = setInterval(async () => {
         const response = await axios.post(
           'http://localhost:5000/api/land-transfers/poll',
-          { pollUrl, landTransferId: 7 },
+          { pollUrl, landTransferId: 9 },
           {
             headers: {
               Authorization:
-                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJmYWJyaWNlLm1hbnppQGdtYWlsLmNvbSIsImlhdCI6MTYxODMwMjgwMywiZXhwIjoxNjE4Mzg5MjAzfQ.8wMp-v1uU9mZ8VATdU_9Q7WTem7NEgs1lGdc2iQwo6M'
+                'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJmYWJyaWNlLm1hbnppQGdtYWlsLmNvbSIsImlhdCI6MTYxODM4OTM0NywiZXhwIjoxNjE4NDc1NzQ3fQ.wAV38NEqq2cpI5HQKchh1YVsr9dW4N0EPuUt7vwCZE8'
             }
           }
         );
         console.log(response);
-        if (
-          (response.data.status === true && response.data.message === 'paid') ||
-          (response.data.status === false &&
-            response.data.message === 'awaiting delivery')
-        ) {
+        if (response.data.status === true && response.data.message === 'paid') {
           clearInterval(callinterval);
           this.setState({
             loading: false,
@@ -82,7 +78,7 @@ class App extends Component {
           });
           return;
         }
-      }, 3000);
+      }, 15000);
     };
     poll();
   };

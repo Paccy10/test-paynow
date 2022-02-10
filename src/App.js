@@ -10,7 +10,8 @@ class App extends Component {
     phone: "",
     network: "",
     loading: false,
-    message: ""
+    message: "",
+    tokens: "",
   };
 
   onChange = (e) => {
@@ -25,22 +26,22 @@ class App extends Component {
         data = {
           phone: this.state.phone,
           network: this.state.network,
-          amount: this.state.amount
+          amount: this.state.amount,
         };
       } else {
         data = {
           web: this.state.web,
-          amount: this.state.amount
+          amount: this.state.amount,
         };
       }
       const res = await axios.patch(
-        "http://localhost:5000/api/transfers/1/pay",
+        "http://localhost:8000/api/transfers/114/pay",
         data,
         {
           headers: {
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJmZWxpeC5ua3VuZGExQGdtYWlsLmNvbSIsImlhdCI6MTYyMjYzOTk0MSwiZXhwIjoxNjIyNzI2MzQxfQ.xNeQp6HMuoLmvffZzeIlDfCWCMoJg9gBRCyDlyo-enE"
-          }
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJjb252ZXlhbmNlci5vbmVAZ21haWwuY29tIiwiaWF0IjoxNjM4MTc1OTUyLCJleHAiOjE2MzgyNjIzNTJ9.iaQqTpk0spMbYLTe9HthTz14_Zf9IJCOl_AvCIvwWmE",
+          },
         }
       );
       const pollUrl = res.data.pollUrl;
@@ -51,13 +52,13 @@ class App extends Component {
       const poll = () => {
         const callinterval = setInterval(async () => {
           const response = await axios.post(
-            "http://localhost:5000/api/transfers/poll",
-            { pollUrl, transferId: 1 },
+            "http://localhost:8000/api/transfers/poll",
+            { pollUrl, transferId: 114 },
             {
               headers: {
                 Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJmZWxpeC5ua3VuZGExQGdtYWlsLmNvbSIsImlhdCI6MTYyMjYzOTk0MSwiZXhwIjoxNjIyNzI2MzQxfQ.xNeQp6HMuoLmvffZzeIlDfCWCMoJg9gBRCyDlyo-enE"
-              }
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJjb252ZXlhbmNlci5vbmVAZ21haWwuY29tIiwiaWF0IjoxNjM4MTc1OTUyLCJleHAiOjE2MzgyNjIzNTJ9.iaQqTpk0spMbYLTe9HthTz14_Zf9IJCOl_AvCIvwWmE",
+              },
             }
           );
           console.log(response);
@@ -68,7 +69,7 @@ class App extends Component {
             clearInterval(callinterval);
             this.setState({
               loading: false,
-              message: "Payment made successful!"
+              message: "Payment made successful!",
             });
             return;
           }
@@ -79,7 +80,7 @@ class App extends Component {
             clearInterval(callinterval);
             this.setState({
               loading: false,
-              message: "Payment got cancelled!"
+              message: "Payment got cancelled!",
             });
             return;
           }
@@ -90,7 +91,86 @@ class App extends Component {
       if (error.response.status === 404 || error.response.status === 400) {
         this.setState({
           loading: false,
-          message: error.response.data.message[0]
+          message: error.response.data.message[0],
+        });
+      }
+    }
+  };
+
+  onPayTokens = async () => {
+    try {
+      this.setState({ loading: true, message: "" });
+      let data = null;
+      if (this.state.phone) {
+        data = {
+          phone: this.state.phone,
+          network: this.state.network,
+          tokens: this.state.tokens,
+        };
+      } else {
+        data = {
+          web: this.state.web,
+          tokens: this.state.tokens,
+        };
+      }
+      const res = await axios.patch(
+        "http://localhost:5000/api/users/conveyancers/tokens/pay",
+        data,
+        {
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJzdXBlci1hZG1pbkB6aW1jb25uZWN0LmNvbSIsImlhdCI6MTYyNzI4NzA0OSwiZXhwIjoxNjI3MzczNDQ5fQ.si_yJD0GeWCIlFO__MeV-BjVUEdB0-ulwrMO0cTqOvs",
+          },
+        }
+      );
+      const { pollUrl, tokens } = res.data;
+      if (res.data.type === "web") {
+        window.open(res.data.redirectUrl, "_blank");
+      }
+
+      const poll = () => {
+        const callinterval = setInterval(async () => {
+          const response = await axios.post(
+            "http://localhost:5000/api/users/conveyancers/tokens/poll",
+            { pollUrl, tokens },
+            {
+              headers: {
+                Authorization:
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJzdXBlci1hZG1pbkB6aW1jb25uZWN0LmNvbSIsImlhdCI6MTYyNzI4NzA0OSwiZXhwIjoxNjI3MzczNDQ5fQ.si_yJD0GeWCIlFO__MeV-BjVUEdB0-ulwrMO0cTqOvs",
+              },
+            }
+          );
+          console.log(response);
+          if (
+            response.data.status === true &&
+            response.data.message === "paid"
+          ) {
+            clearInterval(callinterval);
+            this.setState({
+              loading: false,
+              message: "Payment made successful!",
+            });
+            return;
+          }
+          if (
+            response.data.status === false &&
+            response.data.message === "cancelled"
+          ) {
+            clearInterval(callinterval);
+            this.setState({
+              loading: false,
+              message: "Payment got cancelled!",
+            });
+            return;
+          }
+        }, 15000);
+      };
+      poll();
+    } catch (error) {
+      if (error.response.status === 404 || error.response.status === 400) {
+        this.setState({
+          loading: false,
+          message: error.response.data.message[0],
         });
       }
     }
@@ -103,8 +183,8 @@ class App extends Component {
       responseType: "blob",
       headers: {
         Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJmZWxpeC5ua3VuZGExQGdtYWlsLmNvbSIsImlhdCI6MTYyMjYzOTk0MSwiZXhwIjoxNjIyNzI2MzQxfQ.xNeQp6HMuoLmvffZzeIlDfCWCMoJg9gBRCyDlyo-enE"
-      }
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwiZW1haWwiOiJjb252ZXlhbmNlci5vbmVAZ21haWwuY29tIiwiaWF0IjoxNjM4MTc1OTUyLCJleHAiOjE2MzgyNjIzNTJ9.iaQqTpk0spMbYLTe9HthTz14_Zf9IJCOl_AvCIvwWmE",
+      },
     }).then((response) => {
       FileDownload(response.data, "file.pdf");
     });
@@ -145,8 +225,18 @@ class App extends Component {
                 onChange={this.onChange}
               />
             </div>
+            <div>
+              <input
+                type="text"
+                name="tokens"
+                placeholder="Tokens"
+                value={this.state.tokens}
+                onChange={this.onChange}
+              />
+            </div>
             <button onClick={this.onPay}>Pay</button>
             <button onClick={this.onDownload}>Download</button>
+            <button onClick={this.onPayTokens}>Pay Tokens</button>
           </div>
         )}
       </div>

@@ -32,14 +32,18 @@ class App extends Component {
           amount: this.state.amount,
         };
       }
-      const res = await axios.post("http://localhost:9000/api/wallet", data, {
-        headers: {
-          Authorization:
-            "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJjb252ZXlhbmNlci5vbmVAZ21haWwuY29tIiwiaWF0IjoxNjQ5MjUzMzE2LCJleHAiOjE2NDkzMzk3MTZ9.NYNFtPRS7vCs0jeX06XUuC7Hnf0JdirDlfLve7UjPic",
-        },
-      });
+      const res = await axios.patch(
+        "http://localhost:9000/api/deed-reissuances/1/pay",
+        data,
+        {
+          headers: {
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJmZWxpeC5ua3VuZGExQGdtYWlsLmNvbSIsImlhdCI6MTY1MDUzMjAyMywiZXhwIjoxNjUwNjE4NDIzfQ.rZQ4oTamDTK8mQuSrzVlpwRaLUOIhXRb_p7wMU8p8JQ",
+          },
+        }
+      );
       console.log(res.data);
-      const { pollUrl, amount } = res.data;
+      const { pollUrl } = res.data;
       if (res.data.type === "web") {
         window.open(res.data.redirectUrl, "_blank");
       }
@@ -47,12 +51,12 @@ class App extends Component {
       const poll = () => {
         const callinterval = setInterval(async () => {
           const response = await axios.post(
-            "http://localhost:9000/api/wallet/poll",
-            { pollUrl, amount: parseFloat(amount) },
+            "http://localhost:9000/api/deed-reissuances/poll",
+            { pollUrl, reissuanceId: 1 },
             {
               headers: {
                 Authorization:
-                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NCwiZW1haWwiOiJjb252ZXlhbmNlci5vbmVAZ21haWwuY29tIiwiaWF0IjoxNjQ5MjUzMzE2LCJleHAiOjE2NDkzMzk3MTZ9.NYNFtPRS7vCs0jeX06XUuC7Hnf0JdirDlfLve7UjPic",
+                  "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NiwiZW1haWwiOiJmZWxpeC5ua3VuZGExQGdtYWlsLmNvbSIsImlhdCI6MTY1MDUzMjAyMywiZXhwIjoxNjUwNjE4NDIzfQ.rZQ4oTamDTK8mQuSrzVlpwRaLUOIhXRb_p7wMU8p8JQ",
               },
             }
           );
